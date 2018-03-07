@@ -1,0 +1,34 @@
+html, body {
+	text-align: center;
+	margin:0;
+	padding:0;
+	background: #000000;
+	color: #666666;
+}
+
+#outer {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 1px;
+	height: 1px;
+	overflow: visible;
+}
+
+#canvas_container {
+	position: absolute;
+	width: 1000px;
+	height: 560px;
+	top: -280px;
+	left: -500px;
+}
+
+canvas {
+	border: 1px solid #333333;
+}
+
+#output {
+	font-family: Verdana;
+	font-size: 0.6em;
+	margin-top:2px;
+}

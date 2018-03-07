@@ -1,1 +1,32 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Voronoi</title>
+    <meta name="description" content="HTML5/canvas demo using a dynamic voronoi diagram of 300 vertices." />
+    <meta name="keywords" content="html5,canvas,javascript,voronoi,delaunay,crust,skeleton,quadedge" />
+    <link rel="stylesheet" type="text/css" href="voronoi.css" />
+    <script type="text/javascript" src="voronoi.js"></script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-19004550-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+  </head>
+  <body onload="init();">
+    <div id="outer">
+      <div id="canvas_container">
+        <canvas id="main_canvas" width="1000" height="560"></canvas>
+        <div id="output"></div>
+      </div>
+    </div>
+  </body>
+</html>
