@@ -3,25 +3,18 @@
   <head>
     <meta charset="utf-8"/>
     <title>Voronoi</title>
-    <meta name="description" content="HTML5/canvas demo using a dynamic voronoi diagram of 300 vertices." />
-    <meta name="keywords" content="html5,canvas,javascript,voronoi,delaunay,crust,skeleton,quadedge" />
+    <meta name="description" content="HTML5/canvas demo of a 2D voronoi diagram."/>
+    <meta name="keywords" content="html5, canvas, javascript, voronoi, delaunay, crust, skeleton, quadedge"/>
     <link rel="stylesheet" type="text/css" href="voronoi.css" />
     <script type="text/javascript" src="voronoi.js"></script>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-19004550-2"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-19004550-2');
-</script>
   </head>
   <body onload="init();">
     <div id="outer">
       <div id="canvas_container">
-        <canvas id="main_canvas" width="1000" height="560"></canvas>
-        <div id="output"></div>
+        <canvas id="voronoi_canvas" width="1000" height="560"></canvas>
+        <div id="instructions">
+          Click to add points  |  'd' for delaunay triangulation  |  'v' for voronoi diagram  |  's' for skeleton transform  |  'c' for cursor
+        </div>
       </div>
     </div>
   </body>

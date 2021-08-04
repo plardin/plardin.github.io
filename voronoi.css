@@ -23,12 +23,12 @@ html, body {
 	left: -500px;
 }
 
-canvas {
+#voronoi_canvas {
 	border: 1px solid #333333;
 }
 
-#output {
-	font-family: Verdana;
-	font-size: 0.6em;
-	margin-top:2px;
+#instructions {
+	font-family: Verdana, serif;
+	font-size: 1.05em;
+	margin-top: 2px;
 }
