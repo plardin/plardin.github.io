@@ -10,4 +10,4 @@ Visit [https://plardin.github.io/](http://plardin.github.io) to play with this i
 * Hit **\`s\`** to toggle the Crust/Skeleton transform on/off;
 * Hit **\`c\`** to toggle the Voronoi cursor on/off;
 
-Once you've "reversed engineer" how the color scheme for the vertices works, you'll have figured out a lot of what's going on in there
+Note: Once you've "reversed engineer" how the color scheme for the vertices works, you'll have figured out a lot of what's going on in there :-)
