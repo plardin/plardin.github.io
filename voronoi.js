@@ -129,16 +129,6 @@ function on_mouse_move( e ) {
   if( cursor !== null ) { voronoi_cursor = cursor; }
 }
 
-function screen_2_canvas( e ) {
-  let x = e[ 0 ] - outer_div.offsetLeft - canvas_div.offsetLeft;
-  x = clip( x, boundary, ( canvas_width - boundary ) );
-
-  let y = e[ 1 ] - outer_div.offsetTop  - canvas_div.offsetTop;
-  y = clip( y, boundary, ( canvas_height - boundary ) );
-
-  return [ x, y ];
-}
-
 function on_key_press( e ) {
   const crust_skeleton_key = 's';
   const voronoi_key = 'v';
@@ -153,6 +143,16 @@ function on_key_press( e ) {
   if( key === voronoi_key ) voronoi_mode = !voronoi_mode;
   if( key === crust_skeleton_key ) crust_skeleton_mode = !crust_skeleton_mode;
   if( key === cursor_key ) cursor_mode = !cursor_mode;
+}
+
+function screen_2_canvas( e ) {
+  let x = e[ 0 ] - outer_div.offsetLeft - canvas_div.offsetLeft;
+  x = clip( x, boundary, ( canvas_width - boundary ) );
+
+  let y = e[ 1 ] - outer_div.offsetTop  - canvas_div.offsetTop;
+  y = clip( y, boundary, ( canvas_height - boundary ) );
+
+  return [ x, y ];
 }
 
 function clip( value, lower_bound, upper_bound ) { return value < lower_bound ? lower_bound : value > upper_bound ? upper_bound : value; }
