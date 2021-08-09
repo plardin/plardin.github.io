@@ -488,15 +488,10 @@ function VoronoiCursor( voronoi, locus, areas, vertices, edges, nearest_neighbor
 }
 
 VoronoiCursor.prototype.iterator = function() {
-  const starting_edge = this.edges.find( edge => !edge.is_infinite_edge() && !edge.onext().is_infinite_edge() );
-  if( starting_edge != null ) {
-    const location = this.starting_point_for_traversal();
-    if( location != null ) {
-      return new VoronoiIterator( this.voronoi, location );
-    }
-  }
+  const locus = this.starting_point_for_traversal();
+  if( locus == null ) { return [] }
 
-  return [];
+  return new VoronoiIterator( this.voronoi, locus );
 }
 
 VoronoiCursor.prototype.starting_point_for_traversal = function() {
