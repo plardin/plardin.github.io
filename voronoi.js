@@ -46,9 +46,9 @@ function run() {
 }
 
 function draw_voronoi() {
-  if( voronoi === null ) return;
+  if( typeof voronoi == "undefined" ) return;
 
-  voronoi.edges.forEach( edge => draw_edge( edge ) );
+  if( typeof voronoi_cursor != "undefined" ) { voronoi_cursor.iterator().forEach( edge => draw_edge( edge ) ) }
   voronoi.vertices.forEach( vertex => draw_vertex( vertex ) );
   draw_cursor();
 }
@@ -59,7 +59,7 @@ function draw_cursor() {
   if( cursor_mode ){ voronoi_cursor.areas.forEach( area => draw_polygon( area ) ); }
   voronoi_cursor.vertices.forEach( vertex => draw_2D_vertex( vertex, 'yellow' ) );
   draw_2D_vertex( voronoi_cursor.nearest_neighbor, 'magenta' );
-  draw_2D_vertex( voronoi_cursor.vertex, 'blue' );
+  draw_2D_vertex( voronoi_cursor.locus, 'blue' );
 }
 
 function draw_polygon( area ) {
@@ -93,8 +93,8 @@ function draw_edge( edge ) {
   if( delaunay_mode ) { draw_line( edge.org(), edge.dest(), 2, "gray" ); }
   if( voronoi_mode ) { draw_line( edge.right(), edge.left(), 2, "orange" ); }
   if( crust_skeleton_mode ) {
-      if( edge.is_crust() ) { draw_line( edge.right(), edge.left(), 2, "purple" ); }
-      else { draw_line( edge.org(), edge.dest(), 2, "red" ); }
+    if( edge.is_crust() ) { draw_line( edge.right(), edge.left(), 2, "purple" ); }
+    else { draw_line( edge.org(), edge.dest(), 2, "red" ); }
   }
 }
 
@@ -124,8 +124,8 @@ function on_mouse_move( e ) {
 
   const screen_coords = [ e.clientX, e.clientY ];
   const canvas_coords = screen_2_canvas( screen_coords );
-  const vertex = new Vertex( canvas_coords[ 0 ], canvas_coords[ 1 ] );
-  const cursor = voronoi.cursor( vertex );
+  const location = new Vertex( canvas_coords[ 0 ], canvas_coords[ 1 ] );
+  const cursor = voronoi.cursor( location );
   if( cursor !== null ) { voronoi_cursor = cursor; }
 }
 
@@ -209,6 +209,8 @@ function is_right_of( v0, v1, v2 ) { return area( v0, v1, v2 ) > 0.0; }
 
 function is_left_of( v0, v1, v2 ) { return area( v0, v1, v2 ) < 0.0; }
 
+function centroid( v0, v1, v2 ) { return new Vertex( ( v0.x + v1.x + v2.x ) / 3.0, ( v0.y + v1.y + v2.y ) / 3.0 ); }
+
 //========================================
 // Quadedge data structure and operators
 //========================================
@@ -267,7 +269,7 @@ Edge.prototype.onext = function() { return this.next; }
 
 // Edge.prototype.rnext = function() { return this.rot.next.rot.rot.rot; }
 
-// Edge.prototype.dnext = function() { return this.rot.rot.next.rot.rot; }
+Edge.prototype.dnext = function() { return this.rot.rot.next.rot.rot; }
 
 Edge.prototype.lnext = function() { return this.rot.rot.rot.next.rot; }
 
@@ -282,6 +284,8 @@ Edge.prototype.lprev = function() { return this.next.rot.rot; }
 Edge.prototype.is_crust = function() { return in_circle( this.left(), this.org(), this.right(), this.dest() ); }
 
 Edge.prototype.is_infinite_edge = function() { return this.org().is_infinity || this.dest().is_infinity; }
+
+// Edge.prototype.is_convex_hull_edge = function() { return this.onext().is_infinite_edge() || this.dprev().is_infinite_edge(); }
 
 Edge.prototype.is_vertex_on_left = function( v ) { return is_left_of( v, this.org(), this.dest() ); }
 
@@ -426,17 +430,17 @@ Voronoi.prototype.set_circumcenter = function( e ) {
   e.lprev().set_left( cc );
 }
 
-Voronoi.prototype.cursor = function( vertex ) {
-  if( !this.is_inside_cosmic_triangle( vertex ) ){ return null; }
+Voronoi.prototype.cursor = function( locus ) {
+  if( !this.is_inside_cosmic_triangle( locus ) ){ return null; }
 
-  try { this.locate( vertex ); }
+  try { this.locate( locus ); }
   catch( exception ) {
     if( exception === "LocateException" ) { return null; }
     alert( exception );
   }
 
   let e = this.edge;
-  while( e.is_vertex_on_left( e.onext().dest() ) && in_circle( vertex, e.org(), e.dest(), e.onext().dest() ) ) {
+  while( e.is_vertex_on_left( e.onext().dest() ) && in_circle( locus, e.org(), e.dest(), e.onext().dest() ) ) {
     e = e.onext();
   }
 
@@ -445,16 +449,16 @@ Voronoi.prototype.cursor = function( vertex ) {
   const stolen_areas = [];
   let v1 = e.org();
   let nn = e.org();
-  let min_dist_sqr = dist_sqr( vertex, v1 );
+  let min_dist_sqr = dist_sqr( locus, v1 );
   do {
-    let area = [ circumcenter( e.dest(), e.org(), vertex ) ];
+    let area = [ circumcenter( e.dest(), e.org(), locus ) ];
     do {
       area.push( e.left() );
       e = e.onext();
-    } while( in_circle( vertex, e.org(), e.dest(), e.onext().dest() ) );
-    area.push( circumcenter( e.org(), e.dest(), vertex ) );
+    } while( in_circle( locus, e.org(), e.dest(), e.onext().dest() ) );
+    area.push( circumcenter( e.org(), e.dest(), locus ) );
 
-    const a_dist_sqr = dist_sqr( vertex, e.org() );
+    const a_dist_sqr = dist_sqr( locus, e.org() );
     if( a_dist_sqr === 0.0 ) { return null; }
 
     if( a_dist_sqr <= min_dist_sqr ) {
@@ -467,12 +471,67 @@ Voronoi.prototype.cursor = function( vertex ) {
     e = e.sym();
   } while( e.org() !== v1 );
 
-  return new Neighborhood( vertex, stolen_areas, neighbors.map( ed => ed.org() ), nn );
+  return new VoronoiCursor( this, locus, stolen_areas, neighbors.map( ed => ed.org() ), neighbors, nn );
 }
 
-function Neighborhood( vertex, areas, vertices, nearest_neighbor ) {
-  this.vertex = vertex;
+//==================
+// Voronoi Cursor
+//==================
+
+function VoronoiCursor( voronoi, locus, areas, vertices, edges, nearest_neighbor ) {
+  this.voronoi = voronoi;
+  this.locus = locus;
   this.areas = areas;
   this.vertices = vertices;
+  this.edges = edges;
   this.nearest_neighbor = nearest_neighbor;
+}
+
+VoronoiCursor.prototype.iterator = function() {
+  const starting_edge = this.edges.find( edge => !edge.is_infinite_edge() && !edge.onext().is_infinite_edge() );
+  if( starting_edge != null ) {
+    const location = this.starting_point_for_traversal();
+    if( location != null ) {
+      return new VoronoiIterator( this.voronoi, location );
+    }
+  }
+
+  return [];
+}
+
+VoronoiCursor.prototype.starting_point_for_traversal = function() {
+  const starting_edge = this.edges.find( edge => !edge.is_infinite_edge() && !edge.onext().is_infinite_edge() );
+  if( starting_edge == null ) { return null; }
+
+  return centroid( starting_edge.org(), starting_edge.dest(), starting_edge.onext().dest() );
+}
+
+//===================
+// Voronoi Iterator
+//===================
+
+function VoronoiIterator( voronoi, locus ) {
+  this.locus = locus;
+  this.stack = [];
+  const e = voronoi.locate( locus );
+  const neighbors = [ e, e.lprev(), e.lnext() ];
+  neighbors.forEach( n => { if( !n.is_infinite_edge() ){ this.stack.push( n ); } } );
+}
+
+VoronoiIterator.prototype.process_edge = function( edge_function, edge ) {
+  edge_function( edge );
+}
+
+VoronoiIterator.prototype.forEach = function( edge_function ) {
+  while( this.stack.length > 0 ) {
+    let e = this.stack.pop();
+    do {
+      this.process_edge( edge_function, e );
+      const bubble_edge = e.dnext();
+      e = e.oprev();
+      if( !bubble_edge.is_infinite_edge() && bubble_edge.is_vertex_on_left( this.locus ) ) {
+        this.stack.push( bubble_edge )
+      }
+    } while( e.is_vertex_on_left( this.locus ) );
+  }
 }
